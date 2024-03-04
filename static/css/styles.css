@@ -35,13 +35,15 @@ h1 {
 }
 
 .input-group {
+    flex-direction: column;
     display: flex;
     align-items: center;
     margin-bottom: 10px; /* Adjust spacing between input groups */
+    margin-top: 10px;
 }
 
 .input-group label {
-    margin-right: 10px; /* Adjust spacing between label and input */
+    margin-bottom: 10px; /* Adjust spacing between label and input */
 }
 
 .input {

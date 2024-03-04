@@ -90,7 +90,7 @@ func saveToken(path string, token *oauth2.Token) {
 }
 
 // SubmitSpreadSheetData submits data to the spreadsheet.
-func SubmitSpreadSheetData(email, signinType string) error {
+func SubmitSpreadSheetData(email string, signinType string, freePeriod string, reason string) error {
 	ctx := context.Background()
 
 	// Authenticate and get the Sheets client
@@ -130,10 +130,28 @@ func SubmitSpreadSheetData(email, signinType string) error {
 			return fmt.Errorf("unable to create new sheet: %v", err)
 		}
 	}
+	if !sheetExists {
+		columns :=[][]interface{}{
+			{"Email", "Time", "Sign Out/Sign In", "Free Period?", "Reason"},
+		}
+		// Define the range to append data
+		rangeToAppend := fmt.Sprintf("%s!A:E", currentDate)
+
+		// Create the request body
+		rb := &sheets.ValueRange{
+			Values: columns,
+		}
+
+		// Append the data to the spreadsheet
+		_, err = srv.Spreadsheets.Values.Append(os.Getenv("GOOGLE_SPREADSHEET_ID"), rangeToAppend, rb).ValueInputOption("RAW").Context(ctx).Do()
+		if err != nil {
+			return fmt.Errorf("unable to append data to sheet: %v", err)
+		}
+	}
 
 	// Prepare the data to be appended
 	values := [][]interface{}{
-		{email, time.Now().Format("2006-01-02 15:04:05"), signinType},
+		{email, time.Now().Format("2006-01-02 15:04:05"), signinType, freePeriod, reason},
 	}
 
 	// Define the range to append data

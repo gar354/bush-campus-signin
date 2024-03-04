@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"gareth/attendence/googleLoginAuth"
 	"gareth/attendence/spreadsheetAPI"
 	"html/template"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -68,7 +68,7 @@ func formHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
-	if r.FormValue("uuid") != currentUUID ||  !(r.FormValue("signin-type") == "Signing In" || r.FormValue("signin-type") == "Signing Out") {
+	if !validateFormSubmit(r) {
 		http.Error(w, "Failed to submit form: invalid form data", http.StatusInternalServerError)
 		return
 	}
@@ -81,9 +81,13 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get user data", http.StatusInternalServerError)
 		return
 	}
-	spreadsheetAPI.SubmitSpreadSheetData(user.Email, r.FormValue("signin-type"))
+	spreadsheetAPI.SubmitSpreadSheetData(user.Email, r.FormValue("signin-type"), r.FormValue("free-period"), r.FormValue("reason"))
 	refreshFormURL()
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+}
+
+func validateFormSubmit(r *http.Request) bool {
+	return r.FormValue("uuid") == currentUUID && (r.FormValue("signin-type") == "Signing In" || r.FormValue("signin-type") == "Signing Out") && (r.FormValue("free-period") == "Yes" || r.FormValue("free-period") == "No") && (len(r.FormValue("reason")) <= 25)
 }
 
 func main() {
@@ -129,7 +133,7 @@ func refreshFormURL() {
 		log.Printf("standard.New failed: %v", err)
 		return
 	}
-	
+
 	// save file
 	if err = qrc.Save(w); err != nil {
 		log.Printf("could not save image: %v", err)
