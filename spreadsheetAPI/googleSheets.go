@@ -39,7 +39,7 @@ func getClient(config *oauth2.Config) *http.Client {
 	// The file token.json stores the user's access and refresh tokens, and is
 	// created automatically when the authorization flow completes for the first
 	// time.
-	tokFile := "creds/token.json"
+	tokFile := "data/token.json"
 	tok, err := tokenFromFile(tokFile)
 	if err != nil {
 		tok = getTokenFromWeb(config)
@@ -102,6 +102,34 @@ func SubmitSpreadSheetData(email, signinType string) error {
 
 	// Get the current date to label the tab
 	currentDate := time.Now().Format("2006-01-02")
+
+	sheetExists := false
+	resp, err := srv.Spreadsheets.Get(os.Getenv("GOOGLE_SPREADSHEET_ID")).Context(ctx).Do()
+	if err != nil {
+		return fmt.Errorf("unable to get spreadsheet: %v", err)
+	}
+	for _, sheet := range resp.Sheets {
+		if sheet.Properties.Title == currentDate {
+			sheetExists = true
+			break
+		}
+	}
+	if !sheetExists {
+		_, err := srv.Spreadsheets.BatchUpdate(os.Getenv("GOOGLE_SPREADSHEET_ID"), &sheets.BatchUpdateSpreadsheetRequest{
+			Requests: []*sheets.Request{
+				{
+					AddSheet: &sheets.AddSheetRequest{
+						Properties: &sheets.SheetProperties{
+							Title: currentDate,
+						},
+					},
+				},
+			},
+		}).Context(ctx).Do()
+		if err != nil {
+			return fmt.Errorf("unable to create new sheet: %v", err)
+		}
+	}
 
 	// Prepare the data to be appended
 	values := [][]interface{}{

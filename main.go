@@ -68,11 +68,6 @@ func formHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("submitted UUID: %s, current UUID: %s",r.FormValue("uuid"), currentUUID)
-	log.Printf("sign in type: %s",r.FormValue("signin-type"))
-	log.Printf("name: %s",r.FormValue("name"))
-	log.Printf("email: %s",r.FormValue("email"))
-
 	if r.FormValue("uuid") != currentUUID ||  !(r.FormValue("signin-type") == "Signing In" || r.FormValue("signin-type") == "Signing Out") {
 		http.Error(w, "Failed to submit form: invalid form data", http.StatusInternalServerError)
 		return
@@ -113,7 +108,7 @@ func main() {
 	googleLoginAuth.SetupCallbacks(mux)
 	refreshFormURL()
 
-	if err := http.ListenAndServeTLS(":"+port, "server.crt", "server.key", mux); err != http.ErrServerClosed {
+	if err := http.ListenAndServeTLS(":"+port, "data/server.crt", "data/server.key", mux); err != http.ErrServerClosed {
 		log.Printf("%v", err)
 	} else {
 		log.Println("Server closed!")
@@ -129,7 +124,7 @@ func refreshFormURL() {
 		log.Printf("could not generate QRCode: %v", err)
 		return
 	}
-	w, err := standard.New("qrcode.jpeg")
+	w, err := standard.New("data/qrcode.jpeg")
 	if err != nil {
 		log.Printf("standard.New failed: %v", err)
 		return

@@ -18,10 +18,10 @@ import (
 )
 
 type User struct {
-	Verified_Email bool
-	Name           string
-	Email          string
-	Picture        string
+	VerifiedEmail  bool   `json:"verified_email"`
+	Name           string `json:"name"`
+	Email          string `json:"email"`
+	Picture        string `json:"picture"`
 }
 
 var store = sessions.NewCookieStore(generateSessionKey())
@@ -190,10 +190,12 @@ func IsUserAuthenticated(r *http.Request) bool {
 
 	// Check if userinfo is stored in the session
 	userinfo, _ := session.Values["userinfo"].([]byte)
+	// log.Printf("%s", userinfo)
+	
 	var user User
 	err = json.Unmarshal(userinfo, &user)
 	if err != nil {
 		return false
 	}
-	return user.Verified_Email
+	return user.VerifiedEmail
 }
