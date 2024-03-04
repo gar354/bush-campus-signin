@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body>
+    <div id="content-container">
+        <h1>Bush Campus Sign in/out</h1>
+        <form id="bush-signin" action="/submit" method="post">
+            <div class="input-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" class="input" value="{{ .User.Name }}" readonly>
+            </div>
+            <div class="input-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" class="input" value="{{ .User.Email }}" readonly>
+            </div>
+            <br>
+            <label for="signin-type" class="input-group">Are you signing in or out of campus?</label>
+            <div>
+                <div class="radio">
+                    <input type="radio" id="sign-in" name="signin-type" value="Signing In" class="radio__input" required/>
+                    <label for="sign-in" class="radio__label">Signing In</label>
+                </div>
+                <div class="radio">
+                    <input type="radio" id="sign-out" name="signin-type" value="Signing Out" class="radio__input" />
+                    <label for="sign-out" class="radio__label">Signing Out</label>
+                </div>
+            </div>
+            <br><br>
+            <input type="hidden" id="uuid" name="uuid" value="{{ .UUID }}">
+            <input type="submit" value="Submit" class="btn-primary ripple">
+        </form>
+    </div>
+</body>
+</html>
