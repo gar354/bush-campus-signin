@@ -91,6 +91,16 @@ func validateFormSubmit(r *http.Request) bool {
 }
 
 func main() {
+	if len(os.Args) == 2 {
+		if os.Args[1] == "generate-sheets-token" {
+			spreadsheetAPI.SaveTokenFromWeb()
+			return
+		}
+	}
+	if !checkRequiredEnvVars([]string{"GOOGLE_OAUTH_CLIENT_ID","GOOGLE_OAUTH_CLIENT_SECRET","GOOGLE_SPREADSHEET_OAUTH_CLIENT_ID", "GOOGLE_SPREADSHEET_OAUTH_CLIENT_SECRET", "GOOGLE_SPREADSHEET_ID"}) {
+		return
+	}
+	
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Error loading .env file")
@@ -138,4 +148,15 @@ func refreshFormURL() {
 	if err = qrc.Save(w); err != nil {
 		log.Printf("could not save image: %v", err)
 	}
+}
+
+func checkRequiredEnvVars(requiredEnvVars []string) bool {
+	for _, envVar := range requiredEnvVars {
+		value := os.Getenv(envVar)
+		if value == "" {
+			log.Fatalf("Could not find required env var: %s", envVar)
+			return false
+		}
+	}
+	return true
 }

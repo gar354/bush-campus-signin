@@ -17,6 +17,7 @@ import (
 )
 
 var googleOauthConfig *oauth2.Config
+var tokFile string = "data/token.json"
 
 func init() {
 	// Load environment variables from .env file
@@ -32,6 +33,11 @@ func init() {
 		Scopes:       []string{"https://www.googleapis.com/auth/spreadsheets"},
 		Endpoint:     google.Endpoint,
 	}
+
+	_, err := tokenFromFile(tokFile)
+	if err != nil {
+		log.Fatalf("Unabled to parse token (data/token.json): %v", err)
+	}
 }
 
 // Retrieve a token, saves the token, then returns the generated client.
@@ -39,13 +45,17 @@ func getClient(config *oauth2.Config) *http.Client {
 	// The file token.json stores the user's access and refresh tokens, and is
 	// created automatically when the authorization flow completes for the first
 	// time.
-	tokFile := "data/token.json"
+	
 	tok, err := tokenFromFile(tokFile)
 	if err != nil {
-		tok = getTokenFromWeb(config)
-		saveToken(tokFile, tok)
+		log.Fatalf("Unabled to parse token (data/token.json): %v", err)
 	}
 	return config.Client(context.Background(), tok)
+}
+
+func SaveTokenFromWeb() {
+	tok := getTokenFromWeb(googleOauthConfig)
+	saveToken(tokFile, tok)
 }
 
 // Request a token from the web, then returns the retrieved token.
@@ -130,6 +140,7 @@ func SubmitSpreadSheetData(email string, signinType string, freePeriod string, r
 			return fmt.Errorf("unable to create new sheet: %v", err)
 		}
 	}
+	// add columns
 	if !sheetExists {
 		columns :=[][]interface{}{
 			{"Email", "Time", "Sign Out/Sign In", "Free Period?", "Reason"},
