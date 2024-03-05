@@ -18,10 +18,10 @@ import (
 )
 
 type User struct {
-	VerifiedEmail  bool   `json:"verified_email"`
-	Name           string `json:"name"`
-	Email          string `json:"email"`
-	Picture        string `json:"picture"`
+	VerifiedEmail bool   `json:"verified_email"`
+	Name          string `json:"name"`
+	Email         string `json:"email"`
+	Picture       string `json:"picture"`
 }
 
 var store = sessions.NewCookieStore(generateSessionKey())
@@ -40,8 +40,12 @@ func init() {
 		RedirectURL:  "https://localhost:5000/login/callback",
 		ClientID:     os.Getenv("GOOGLE_OAUTH_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
-		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile", "openid"},
-		Endpoint:     google.Endpoint,
+		Scopes: []string{
+			"https://www.googleapis.com/auth/userinfo.email",
+			"https://www.googleapis.com/auth/userinfo.profile",
+			"openid",
+		},
+		Endpoint: google.Endpoint,
 	}
 }
 
@@ -191,7 +195,7 @@ func IsUserAuthenticated(r *http.Request) bool {
 	// Check if userinfo is stored in the session
 	userinfo, _ := session.Values["userinfo"].([]byte)
 	// log.Printf("%s", userinfo)
-	
+
 	var user User
 	err = json.Unmarshal(userinfo, &user)
 	if err != nil {

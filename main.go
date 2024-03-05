@@ -15,7 +15,11 @@ import (
 	"github.com/yeqown/go-qrcode/writer/standard"
 )
 
-var tpl = template.Must(template.ParseFiles("templates/index.html", "templates/google-signin.html", "templates/form.html"))
+var tpl = template.Must(template.ParseFiles(
+	"templates/index.html",
+	"templates/google-signin.html",
+	"templates/form.html"))
+
 var currentUUID = ""
 var formURL = ""
 
@@ -81,29 +85,46 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get user data", http.StatusInternalServerError)
 		return
 	}
-	spreadsheetAPI.SubmitSpreadSheetData(user.Email, r.FormValue("signin-type"), r.FormValue("free-period"), r.FormValue("reason"))
+	err = spreadsheetAPI.SubmitSpreadSheetData(
+		user.Email, r.FormValue("signin-type"),
+		r.FormValue("free-period"),
+		r.FormValue("reason"))
+	if err != nil {
+		log.Errorf("Unable to submit data to spreadsheet: %v", err)
+	}
+
 	refreshFormURL()
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
 func validateFormSubmit(r *http.Request) bool {
-	return r.FormValue("uuid") == currentUUID && (r.FormValue("signin-type") == "Signing In" || r.FormValue("signin-type") == "Signing Out") && (r.FormValue("free-period") == "Yes" || r.FormValue("free-period") == "No") && (len(r.FormValue("reason")) <= 25)
+	return r.FormValue("uuid") == currentUUID &&
+		(r.FormValue("signin-type") == "Signing In" || r.FormValue("signin-type") == "Signing Out") &&
+		(r.FormValue("free-period") == "Yes" || r.FormValue("free-period") == "No") &&
+		(len(r.FormValue("reason")) <= 25)
 }
 
 func main() {
-	if len(os.Args) == 2 {
+	// if you pass in generate-sheets-token, it will generate the token required to access the google sheets API for said user
+	if len(os.Args) > 1 {
 		if os.Args[1] == "generate-sheets-token" {
 			spreadsheetAPI.SaveTokenFromWeb()
 			return
 		}
 	}
-	if !checkRequiredEnvVars([]string{"GOOGLE_OAUTH_CLIENT_ID","GOOGLE_OAUTH_CLIENT_SECRET","GOOGLE_SPREADSHEET_OAUTH_CLIENT_ID", "GOOGLE_SPREADSHEET_OAUTH_CLIENT_SECRET", "GOOGLE_SPREADSHEET_ID"}) {
-		return
-	}
-	
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Error loading .env file")
+	}
+	if !checkRequiredEnvVars([]string{
+		"GOOGLE_OAUTH_CLIENT_ID",
+		"GOOGLE_OAUTH_CLIENT_SECRET",
+		"GOOGLE_SPREADSHEET_OAUTH_CLIENT_ID",
+		"GOOGLE_SPREADSHEET_OAUTH_CLIENT_SECRET",
+		"GOOGLE_SPREADSHEET_ID",
+	}) {
+		return
 	}
 
 	port := os.Getenv("PORT")
@@ -122,7 +143,7 @@ func main() {
 	googleLoginAuth.SetupCallbacks(mux)
 	refreshFormURL()
 
-	if err := http.ListenAndServeTLS(":"+port, "data/server.crt", "data/server.key", mux); err != http.ErrServerClosed {
+	if err = http.ListenAndServeTLS(":"+port, "data/server.crt", "data/server.key", mux); err != http.ErrServerClosed {
 		log.Printf("%v", err)
 	} else {
 		log.Println("Server closed!")

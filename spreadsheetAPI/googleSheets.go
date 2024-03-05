@@ -9,9 +9,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
@@ -20,23 +20,22 @@ var googleOauthConfig *oauth2.Config
 var tokFile string = "data/token.json"
 
 func init() {
-	// Load environment variables from .env file
+	_, err := tokenFromFile(tokFile)
+	if err != nil {
+		log.Fatalf("Unabled to parse token (data/token.json): %v", err)
+	}
+
+	// Load environment variables from .env file (for credentials)
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	// Initialize googleOauthConfig
 	googleOauthConfig = &oauth2.Config{
-		RedirectURL:  "urn:ietf:wg:oauth:2.0:oob",
+		RedirectURL:  "urn:ietf:wg:oauth:2.0:oob", // this indicates it's a "desktop" app instead of "web" app to google oauth servers
 		ClientID:     os.Getenv("GOOGLE_SPREADSHEET_OAUTH_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_SPREADSHEET_OAUTH_CLIENT_SECRET"),
 		Scopes:       []string{"https://www.googleapis.com/auth/spreadsheets"},
 		Endpoint:     google.Endpoint,
-	}
-
-	_, err := tokenFromFile(tokFile)
-	if err != nil {
-		log.Fatalf("Unabled to parse token (data/token.json): %v", err)
 	}
 }
 
@@ -45,7 +44,7 @@ func getClient(config *oauth2.Config) *http.Client {
 	// The file token.json stores the user's access and refresh tokens, and is
 	// created automatically when the authorization flow completes for the first
 	// time.
-	
+
 	tok, err := tokenFromFile(tokFile)
 	if err != nil {
 		log.Fatalf("Unabled to parse token (data/token.json): %v", err)
@@ -142,7 +141,7 @@ func SubmitSpreadSheetData(email string, signinType string, freePeriod string, r
 	}
 	// add columns
 	if !sheetExists {
-		columns :=[][]interface{}{
+		columns := [][]interface{}{
 			{"Email", "Time", "Sign Out/Sign In", "Free Period?", "Reason"},
 		}
 		// Define the range to append data
@@ -169,16 +168,16 @@ func SubmitSpreadSheetData(email string, signinType string, freePeriod string, r
 	rangeToAppend := fmt.Sprintf("%s!A:E", currentDate)
 
 	// Create the request body
-	rb := &sheets.ValueRange{
+	requestBody := &sheets.ValueRange{
 		Values: values,
 	}
 
 	// Append the data to the spreadsheet
-	_, err = srv.Spreadsheets.Values.Append(os.Getenv("GOOGLE_SPREADSHEET_ID"), rangeToAppend, rb).ValueInputOption("RAW").Context(ctx).Do()
+	_, err = srv.Spreadsheets.Values.Append(os.Getenv("GOOGLE_SPREADSHEET_ID"),
+		rangeToAppend, requestBody).ValueInputOption("RAW").Context(ctx).Do()
 	if err != nil {
 		return fmt.Errorf("unable to append data to sheet: %v", err)
 	}
 
 	return nil
 }
-
