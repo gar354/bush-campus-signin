@@ -11,7 +11,7 @@
 - Can be hosted on a local network to prevent access to the website when trying to connect outside of bush wifi
 
 
-## Things thatstill need to be figured out
+## Things that still need to be figured out
 - Using google authentication and possibly requiring you to be signed into a special google account to access websocket/qr viewer.
 - Need more info on how we want to display the actual QR code, but the backend is mostly solved
 - Deploying with NGINX (this one is easy)
