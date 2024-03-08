@@ -1,6 +1,6 @@
 # Signin Website for bush
 - Uses ephemeral URLs with new UUIDs generated each time a form is submitted
-- QR codes can be displayed from a password protected web page, using websockets to update the QR image
+- QR codes for the form URL can be displayed from a password protected web page, using websockets to update the QR image
 - Written in go for memory saftey, great concurrency, and speed
 
 ## Secure and reliable
