@@ -42,31 +42,30 @@ func (b *Broadcaster) DeRegister(client chan []byte) {
 
 func (b *Broadcaster) Serve() {
 	if b.running {
-		log.Println("Warning: broadcaster is already running")
+		log.Println("Broadcast: Warning: broadcaster is already running")
 		return
 	}
 	b.running = true
 	var clients []chan []byte
 
-	log.Println("server running!")
 	for {
 		select {
 		case client, ok := <-b.clientRegister:
 			if !ok {
-				log.Println("clientRegister channel closed")
+				log.Println("Broadcast: clientRegister channel closed")
 				return
 			}
-			log.Println("client sent!")
+			log.Println("Broadcast: broadcast client sent.")
 			clients = append(clients, client)
 		case client, ok := <-b.clientDeRegister:
 			if !ok {
-				log.Println("clientDeRegister channel closed")
+				log.Println("Broadcast: clientDeRegister channel closed")
 				return
 			}
 			index := slices.Index(clients, client)
 			clients = slices.Delete(clients, index, index+1)
 			close(client)
-			log.Println("client deregistered!")
+			log.Println("Broadcast: broadcast client deregistered")
 
 		case data, ok := <-b.channel:
 			if !ok {

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 )
@@ -22,9 +23,16 @@ var tpl = template.Must(template.ParseFiles(
 
 var qrServer serveQr.Server
 
+var wsPassword string = uuid.NewString()
 func main() {
 	/* if you pass in generate-sheets-token, it will generate the token required
 	to access the google sheets API for said user */
+	if !checkRequiredEnvVars([]string{
+		"GOOGLE_SPREADSHEET_OAUTH_CLIENT_ID",
+		"GOOGLE_SPREADSHEET_OAUTH_CLIENT_SECRET",
+	}) {
+		return
+	}
 
 	if len(os.Args) > 1 {
 		if os.Args[1] == "generate-sheets-token" {
@@ -40,9 +48,8 @@ func main() {
 	if !checkRequiredEnvVars([]string{
 		"GOOGLE_OAUTH_CLIENT_ID",
 		"GOOGLE_OAUTH_CLIENT_SECRET",
-		"GOOGLE_SPREADSHEET_OAUTH_CLIENT_ID",
-		"GOOGLE_SPREADSHEET_OAUTH_CLIENT_SECRET",
 		"GOOGLE_SPREADSHEET_ID",
+		"QR_VIEWER_PASSWORD",
 	}) {
 		return
 	}
@@ -156,8 +163,8 @@ func validateFormSubmit(r *http.Request) bool {
 }
 
 func qrWSHandler(w http.ResponseWriter, r *http.Request) {
-	password := r.URL.Query().Get("password")
-	if password != "password" {
+	password := r.URL.Query().Get(wsPassword)
+	if password != wsPassword {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		log.Println("Unauthorized http request for QR image rejected.")
 		return
@@ -204,7 +211,13 @@ func qrWSHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func qrViewHandler(w http.ResponseWriter, r *http.Request) {
-	tpl.ExecuteTemplate(w, "qr-viewer.html", nil)
+	password := r.URL.Query().Get("password")
+	if password != os.Getenv("QR_VIEWER_PASSWORD") {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		log.Println("Unauthorized http request for QR image viewer rejected.")
+		return
+	}
+	tpl.ExecuteTemplate(w, "qr-viewer.html", wsPassword)
 }
 
 func checkRequiredEnvVars(requiredEnvVars []string) bool {

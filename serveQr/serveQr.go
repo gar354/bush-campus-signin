@@ -70,14 +70,10 @@ func (s *Server) RefreshQr() error {
 }
 
 func (s *Server) GetUUID() string {
-	s.mu.Lock()
-	defer s.mu.Unlock()
 	return s.uuid
 }
 
 func (s *Server) GetIMGData() []byte {
-	s.mu.Lock()
-	defer s.mu.Unlock()
 	return s.imgData
 }
 

@@ -19,7 +19,6 @@
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" class="input" value="{{ .User.Email }}" readonly>
             </div>
-            <br>
             <label for="signin-type" class="input-group">Are you signing in or out of campus?</label>
             <div>
                 <div class="radio">
@@ -46,7 +45,6 @@
                 <label for="">Reason</label>
                 <input type="text" id="reason" name="reason" class="input" maxlength="25">
             </div>
-            <br>
             <input type="hidden" id="uuid" name="uuid" value="{{ .UUID }}">
             <input type="submit" value="Submit" class="btn-primary ripple">
         </form>
