@@ -22,7 +22,7 @@ go.work
 
 # project creds/shit generated at runtime
 .env
-creds/*.json
+data/*.json
 server.*
 qrcode.jpeg
 
