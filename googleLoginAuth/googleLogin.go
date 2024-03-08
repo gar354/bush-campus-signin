@@ -7,14 +7,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gorilla/sessions"
-	"github.com/joho/godotenv"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+
+	// using "sessions" as go doesn't support them with std (understandably)
+	// TODO?
+	// implement http sessions myself using crypto libs
+	"github.com/gorilla/sessions"
+	"github.com/joho/godotenv"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
 
 type User struct {
@@ -113,11 +117,10 @@ func oauthGoogleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// save userinfo into the session
 	session.Values["userinfo"] = data
 	session.Save(r, w)
 
-	// Redirect or response with a token.
-	// More code .....
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
