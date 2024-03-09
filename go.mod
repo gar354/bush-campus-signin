@@ -1,4 +1,4 @@
-module gareth/attendence
+module github.com/gar354/bush-campus-signin
 
 go 1.21.7
 

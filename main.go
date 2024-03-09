@@ -1,10 +1,10 @@
 package main
 
 import (
-	"gareth/attendence/googleLoginAuth"
-	"gareth/attendence/serveQr"
-	"gareth/attendence/spreadsheetAPI"
-	"gareth/attendence/middleware"
+	"github.com/gar354/bush-campus-signin/googleLoginAuth"
+	"github.com/gar354/bush-campus-signin/serveQr"
+	"github.com/gar354/bush-campus-signin/spreadsheetAPI"
+	"github.com/gar354/bush-campus-signin/middleware"
 
 	"fmt"
 	"html/template"
@@ -144,12 +144,12 @@ func formHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
-	if !validateFormSubmit(r) {
-		http.Error(w, "Failed to submit form: invalid form data", http.StatusInternalServerError)
-		return
-	}
 	if !googleLoginAuth.IsUserAuthenticated(r) {
 		http.Error(w, "Failed to submit form: User is not authenticated", http.StatusInternalServerError)
+		return
+	}
+	if !validateFormSubmit(r) {
+		http.Error(w, "Failed to submit form: invalid form data", http.StatusInternalServerError)
 		return
 	}
 	user, err := googleLoginAuth.GetUserDataFromSession(r)
@@ -157,13 +157,10 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get user data", http.StatusInternalServerError)
 		return
 	}
-	err = spreadsheetAPI.SubmitSpreadSheetData(
+	go spreadsheetAPI.SubmitSpreadSheetData(
 		user.Email, r.FormValue("signin-type"),
 		r.FormValue("free-period"),
 		r.FormValue("reason"))
-	if err != nil {
-		log.Printf("Unable to submit data to spreadsheet: %v", err)
-	}
 
 	go qrServer.RefreshQr()
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)

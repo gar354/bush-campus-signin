@@ -1,7 +1,7 @@
 package serveQr
 
 import (
-	"gareth/attendence/broadcast"
+	"github.com/gar354/bush-campus-signin/broadcast"
 
 	"bytes"
 	"fmt"
