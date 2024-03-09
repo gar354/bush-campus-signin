@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -157,12 +158,13 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get user data", http.StatusInternalServerError)
 		return
 	}
+	go qrServer.RefreshQr()
 	go spreadsheetAPI.SubmitSpreadSheetData(
 		user.Email, r.FormValue("signin-type"),
 		r.FormValue("free-period"),
 		r.FormValue("reason"))
 
-	go qrServer.RefreshQr()
+	time.Sleep(0.5 * time.Second)
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
