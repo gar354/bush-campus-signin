@@ -4,6 +4,7 @@ import (
 	"gareth/attendence/googleLoginAuth"
 	"gareth/attendence/serveQr"
 	"gareth/attendence/spreadsheetAPI"
+	"gareth/attendence/middleware"
 
 	"fmt"
 	"html/template"
@@ -71,8 +72,7 @@ func main() {
 
 	fs := http.FileServer(http.Dir("static"))
 	mux := http.NewServeMux()
-	// proxyHandler := proxy.NewProxyHandler(mux)
-
+	
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 	mux.HandleFunc("/", indexHandler)
 	mux.HandleFunc("/form", formHandler)
@@ -86,7 +86,9 @@ func main() {
 
 	qrServer = serveQr.New()
 	go qrServer.Broadcast.Serve()
-	if err = http.ListenAndServe(":"+port, mux); err != http.ErrServerClosed {
+
+	middlewareMux := middleware.NewProxyHandler(mux)
+	if err = http.ListenAndServe(":"+port, middlewareMux); err != http.ErrServerClosed {
 		log.Printf("%v", err)
 	} else {
 		log.Println("Server closed!")
