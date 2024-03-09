@@ -1,0 +1,18 @@
+services:
+  bush-campus-signin:
+    image: bush-campus-signin:latest
+    volumes:
+      - $PWD/data:/app/data:Z
+    environment:
+      - URL=https://localhost:8443
+    env_file: .env
+
+  caddy:
+    image: caddy:latest
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - $PWD/Caddyfile:/etc/caddy/Caddyfile:Z
+    depends_on:
+      - bush-campus-signin

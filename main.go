@@ -5,6 +5,7 @@ import (
 	"gareth/attendence/serveQr"
 	"gareth/attendence/spreadsheetAPI"
 
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -25,6 +26,10 @@ var qrServer serveQr.Server
 
 var wsPassword string = uuid.NewString()
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Error loading .env file")
+	}
 	/* if you pass in generate-sheets-token, it will generate the token required
 	to access the google sheets API for said user */
 	if !checkRequiredEnvVars([]string{
@@ -33,7 +38,7 @@ func main() {
 	}) {
 		return
 	}
-
+	spreadsheetAPI.InitOAuthConfig()
 	if len(os.Args) > 1 {
 		if os.Args[1] == "generate-sheets-token" {
 			spreadsheetAPI.SaveTokenFromWeb()
@@ -41,15 +46,12 @@ func main() {
 		}
 	}
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Error loading .env file")
-	}
 	if !checkRequiredEnvVars([]string{
 		"GOOGLE_OAUTH_CLIENT_ID",
 		"GOOGLE_OAUTH_CLIENT_SECRET",
 		"GOOGLE_SPREADSHEET_ID",
 		"QR_VIEWER_PASSWORD",
+		"URL",
 	}) {
 		return
 	}
@@ -57,24 +59,34 @@ func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "5000"
+		os.Setenv("PORT", port)
+	}
+	url := os.Getenv("URL")
+	if url == "" {
+		url = fmt.Sprintf("http://localhost:%s", port)
+		os.Setenv("URL", url)
 	}
 
-	log.Printf("server hosted at https://localhost:%s", port)
+	log.Printf("server hosted at %s",url)
 
 	fs := http.FileServer(http.Dir("static"))
 	mux := http.NewServeMux()
+	// proxyHandler := proxy.NewProxyHandler(mux)
 
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 	mux.HandleFunc("/", indexHandler)
 	mux.HandleFunc("/form", formHandler)
 	mux.HandleFunc("/submit", formSubmitHandler)
+
 	mux.HandleFunc("/qr-viewer", qrViewHandler)
 	mux.HandleFunc("/qr", qrWSHandler)
 	googleLoginAuth.SetupCallbacks(mux)
+	googleLoginAuth.InitOAuthConfig()
+	spreadsheetAPI.CheckForToken()
 
 	qrServer = serveQr.New()
 	go qrServer.Broadcast.Serve()
-	if err = http.ListenAndServeTLS(":"+port, "data/server.crt", "data/server.key", mux); err != http.ErrServerClosed {
+	if err = http.ListenAndServe(":"+port, mux); err != http.ErrServerClosed {
 		log.Printf("%v", err)
 	} else {
 		log.Println("Server closed!")

@@ -12,11 +12,7 @@ import (
 	"net/http"
 	"os"
 
-	// using "sessions" as go doesn't support them with std (understandably)
-	// TODO?
-	// implement http sessions myself using crypto libs
 	"github.com/gorilla/sessions"
-	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -28,20 +24,16 @@ type User struct {
 	Picture       string `json:"picture"`
 }
 
-var store = sessions.NewCookieStore(generateSessionKey())
+var store *sessions.FilesystemStore
 
 // Scopes: OAuth 2.0 scopes provide a way to limit the amount of access that is granted to an access token.
 var googleOauthConfig *oauth2.Config
 
-func init() {
-	// Load environment variables from .env file
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
+func InitOAuthConfig() {
+	store = sessions.NewFilesystemStore("data/", []byte(os.Getenv("SESSION_KEY")))
 	// Initialize googleOauthConfig
 	googleOauthConfig = &oauth2.Config{
-		RedirectURL:  "https://localhost:5000/login/callback",
+		RedirectURL:  fmt.Sprintf("%s/login/callback", os.Getenv("URL")),
 		ClientID:     os.Getenv("GOOGLE_OAUTH_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
 		Scopes: []string{

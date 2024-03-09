@@ -5,6 +5,7 @@ import (
 
 	"bytes"
 	"fmt"
+	"os"
 	"io"
 	"log"
 	"sync"
@@ -44,7 +45,7 @@ func (s *Server) RefreshQr() error {
 	defer s.mu.Unlock()
 
 	s.uuid = uuid.NewString()
-	s.url = fmt.Sprintf("https://localhost:5000/form?UUID=%s", s.uuid)
+	s.url = fmt.Sprintf("%s/form?UUID=%s", os.Getenv("URL"), s.uuid)
 	log.Println(s.url)
 
 	qrc, err := qrcode.NewWith(s.url,

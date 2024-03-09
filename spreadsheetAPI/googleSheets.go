@@ -9,7 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
@@ -19,16 +18,7 @@ import (
 var googleOauthConfig *oauth2.Config
 var tokFile string = "data/token.json"
 
-func init() {
-	_, err := tokenFromFile(tokFile)
-	if err != nil {
-		log.Fatalf("Unabled to parse token (data/token.json): %v", err)
-	}
-
-	// Load environment variables from .env file (for credentials)
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-	}
+func InitOAuthConfig() {
 
 	googleOauthConfig = &oauth2.Config{
 		RedirectURL:  "urn:ietf:wg:oauth:2.0:oob", // this indicates it's a "desktop" app instead of "web" app to google oauth servers
@@ -36,6 +26,13 @@ func init() {
 		ClientSecret: os.Getenv("GOOGLE_SPREADSHEET_OAUTH_CLIENT_SECRET"),
 		Scopes:       []string{"https://www.googleapis.com/auth/spreadsheets"},
 		Endpoint:     google.Endpoint,
+	}
+}
+
+func CheckForToken() {
+	_, err := tokenFromFile(tokFile)
+	if err != nil {
+		log.Fatalf("Unabled to parse token (data/token.json): %v", err)
 	}
 }
 

@@ -1,0 +1,5 @@
+localhost {
+	reverse_proxy {
+		to bush-campus-signin:5000
+	}
+}
