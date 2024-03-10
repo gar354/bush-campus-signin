@@ -17,3 +17,5 @@
 - Need more info on how we want to display the actual QR code, but the backend is mostly solved
 - How do we want to handle CA certs as we need to expose to get them using Caddy?
 - More middleware to death with auth?
+- CI/CD, pushing prebuilt image to the registry using Github CI
+- Unit testing? (not sure if this is really needed but something simple like build checks would be nice)
