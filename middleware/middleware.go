@@ -20,7 +20,7 @@ func NewProxyHandler(handlerToWrap http.Handler) *ProxyHandler {
 }
 
 func (p *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Set the remote IP with the value passed from the proxy.
+	// Set the remote IP using 
 	if fwd := r.Header.Get(xForwardedFor); fwd != "" {
 		// Only grab the first (client) address.
 		s := strings.Index(fwd, ", ")
@@ -31,11 +31,11 @@ func (p *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		r.RemoteAddr = addr
 	}
 
-	// Set the scheme (proto) with the value passed from the proxy.
+	// Set the protocol with value forwarded from the proxy.
 	if proto := r.Header.Get(xForwardedProto); proto != "" {
 		r.URL.Scheme = strings.ToLower(proto)
 	}
-	// Set the host with the value passed by the proxy
+	// Set the host with the value forwarded by the proxy
 	if host := r.Header.Get(xForwardedHost); host != "" {
 		r.Host = host
 	}
