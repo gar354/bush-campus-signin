@@ -26,8 +26,6 @@ var tpl = template.Must(template.ParseFiles(
 
 var qrServer serveQr.Server
 
-var wsPassword string = uuid.NewString()
-
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -234,7 +232,7 @@ func qrViewHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("Unauthorized http request for QR image viewer rejected.")
 		return
 	}
-	tpl.ExecuteTemplate(w, "qr-viewer.html", wsPassword)
+	tpl.ExecuteTemplate(w, "qr-viewer.html", os.Getenv("QR_VIEWER_PASSWORD"))
 }
 
 func checkRequiredEnvVars(requiredEnvVars []string) bool {
