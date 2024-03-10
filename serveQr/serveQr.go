@@ -5,9 +5,9 @@ import (
 
 	"bytes"
 	"fmt"
-	"os"
 	"io"
 	"log"
+	"os"
 	"sync"
 
 	"github.com/google/uuid"
@@ -17,12 +17,12 @@ import (
 )
 
 type Server struct {
-	url          string
-	uuid         string
-	imgData      []byte
-	Broadcast    broadcast.Broadcaster
-	Upgrader     websocket.Upgrader
-	mu           sync.Mutex
+	url       string
+	uuid      string
+	imgData   []byte
+	Broadcast broadcast.Broadcaster
+	Upgrader  websocket.Upgrader
+	mu        sync.Mutex
 }
 
 func New() Server {

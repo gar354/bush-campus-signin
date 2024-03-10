@@ -14,10 +14,10 @@ type Broadcaster struct {
 
 func New() Broadcaster {
 	return Broadcaster{
-		channel: make(chan []byte),
-		clientRegister: make(chan chan []byte, 4),
+		channel:          make(chan []byte),
+		clientRegister:   make(chan chan []byte, 4),
 		clientDeRegister: make(chan chan []byte, 4),
-		running: false,
+		running:          false,
 	}
 }
 
@@ -78,4 +78,3 @@ func (b *Broadcaster) Serve() {
 		}
 	}
 }
-

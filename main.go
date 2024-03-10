@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/gar354/bush-campus-signin/googleLoginAuth"
+	"github.com/gar354/bush-campus-signin/middleware"
 	"github.com/gar354/bush-campus-signin/serveQr"
 	"github.com/gar354/bush-campus-signin/spreadsheetAPI"
-	"github.com/gar354/bush-campus-signin/middleware"
 
 	"fmt"
 	"html/template"
@@ -27,6 +27,7 @@ var tpl = template.Must(template.ParseFiles(
 var qrServer serveQr.Server
 
 var wsPassword string = uuid.NewString()
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -69,11 +70,11 @@ func main() {
 		os.Setenv("URL", url)
 	}
 
-	log.Printf("server hosted at %s",url)
+	log.Printf("server hosted at %s", url)
 
 	fs := http.FileServer(http.Dir("static"))
 	mux := http.NewServeMux()
-	
+
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 	mux.HandleFunc("/", indexHandler)
 	mux.HandleFunc("/form", formHandler)
@@ -159,12 +160,15 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	go qrServer.RefreshQr()
-	go spreadsheetAPI.SubmitSpreadSheetData(
+	err = spreadsheetAPI.SubmitSpreadSheetData(
 		user.Email, r.FormValue("signin-type"),
 		r.FormValue("free-period"),
 		r.FormValue("reason"))
+	if err != nil {
+		http.Error(w, "Failed to record form data", http.StatusInternalServerError)
+		return
+	}
 
-	time.Sleep(0.5 * time.Second)
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 

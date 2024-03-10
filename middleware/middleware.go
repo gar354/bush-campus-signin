@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	xForwardedFor    = http.CanonicalHeaderKey("X-Forwarded-For")
-	xForwardedHost   = http.CanonicalHeaderKey("X-Forwarded-Host")
-	xForwardedProto  = http.CanonicalHeaderKey("X-Forwarded-Proto")
+	xForwardedFor   = http.CanonicalHeaderKey("X-Forwarded-For")
+	xForwardedHost  = http.CanonicalHeaderKey("X-Forwarded-Host")
+	xForwardedProto = http.CanonicalHeaderKey("X-Forwarded-Proto")
 )
 
 type ProxyHandler struct {
@@ -16,7 +16,7 @@ type ProxyHandler struct {
 }
 
 func NewProxyHandler(handlerToWrap http.Handler) *ProxyHandler {
-    return &ProxyHandler{handlerToWrap}
+	return &ProxyHandler{handlerToWrap}
 }
 
 func (p *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
