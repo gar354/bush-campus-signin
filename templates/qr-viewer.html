@@ -7,7 +7,7 @@
     <h1>Dynamic QR Code</h1>
     <img id="qr-code" src="">
     <script>
-        var ws = new WebSocket("wss://" + window.location.host + "/qr?{{ . }}={{ . }}");
+        var ws = new WebSocket("wss://" + window.location.host + "/qr?password={{ . }}");
         ws.binaryType = "blob";
         ws.onmessage = function(event) {
             document.getElementById("qr-code").src = URL.createObjectURL(event.data);

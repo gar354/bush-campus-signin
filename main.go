@@ -180,8 +180,8 @@ func validateFormSubmit(r *http.Request) bool {
 }
 
 func qrWSHandler(w http.ResponseWriter, r *http.Request) {
-	password := r.URL.Query().Get(wsPassword)
-	if password != wsPassword {
+	password := r.URL.Query().Get("password")
+	if password != os.Getenv("QR_VIEWER_PASSWORD") {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		log.Println("Unauthorized http request for QR image rejected.")
 		return
