@@ -13,7 +13,7 @@
             // Set binary type for receiving binary image data
             ws.binaryType = "blob";
             
-            ws.onmessage = function(event) {
+            ws.onmessage = event => {
                 // Set the src attribute of the image to the received data
                 document.getElementById("qr-code").src = URL.createObjectURL(event.data);
             };
