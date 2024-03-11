@@ -20,7 +20,7 @@ func NewProxyHandler(handlerToWrap http.Handler) *ProxyHandler {
 }
 
 func (p *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Set the remote IP using 
+	// Set the remote IP using
 	if fwd := r.Header.Get(xForwardedFor); fwd != "" {
 		// Only grab the first (client) address.
 		s := strings.Index(fwd, ", ")

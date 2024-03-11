@@ -29,28 +29,12 @@ func main() {
 	if err != nil {
 		log.Println("Error loading .env file")
 	}
-	/* if you pass in generate-sheets-token, it will generate the token required
-	to access the google sheets API for said user */
-	if !checkRequiredEnvVars([]string{
-		"GOOGLE_SPREADSHEET_OAUTH_CLIENT_ID",
-		"GOOGLE_SPREADSHEET_OAUTH_CLIENT_SECRET",
-	}) {
-		return
-	}
-	spreadsheetAPI.InitOAuthConfig()
-	if len(os.Args) > 1 {
-		if os.Args[1] == "generate-sheets-token" {
-			spreadsheetAPI.SaveTokenFromWeb()
-			return
-		}
-	}
 
 	if !checkRequiredEnvVars([]string{
 		"GOOGLE_OAUTH_CLIENT_ID",
 		"GOOGLE_OAUTH_CLIENT_SECRET",
 		"GOOGLE_SPREADSHEET_ID",
 		"QR_VIEWER_PASSWORD",
-		"URL",
 	}) {
 		return
 	}
@@ -80,7 +64,6 @@ func main() {
 	mux.HandleFunc("/qr", qrWSHandler)
 	googleLoginAuth.SetupCallbacks(mux)
 	googleLoginAuth.InitOAuthConfig()
-	spreadsheetAPI.CheckForToken()
 
 	qrServer = serveQr.New()
 	go qrServer.Broadcast.Serve()

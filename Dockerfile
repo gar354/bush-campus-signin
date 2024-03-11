@@ -13,11 +13,9 @@ COPY . .
 RUN go build -o /app/go/build/attendence .
 RUN touch /app/go/build/.env && cp -r static templates /app/go/build/
 
-FROM scratch 
+FROM gcr.io/distroless/static
 
 COPY --from=builder /app/go/build/ /app/
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-
 
 WORKDIR /app
 ENTRYPOINT [ "/app/attendence" ]
