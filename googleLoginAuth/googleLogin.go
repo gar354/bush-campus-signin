@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gorilla/sessions"
 	"golang.org/x/oauth2"
@@ -29,13 +28,13 @@ var store *sessions.FilesystemStore
 // Scopes: OAuth 2.0 scopes provide a way to limit the amount of access that is granted to an access token.
 var googleOauthConfig *oauth2.Config
 
-func InitOAuthConfig() {
-	store = sessions.NewFilesystemStore("data/", []byte(os.Getenv("SESSION_KEY")))
+func SetupAuthConfig(sessionKey string, url string, clientID string, clientSecret string) {
+	store = sessions.NewFilesystemStore("data/", []byte(sessionKey))
 	// Initialize googleOauthConfig
 	googleOauthConfig = &oauth2.Config{
-		RedirectURL:  fmt.Sprintf("%s/login/callback", os.Getenv("URL")),
-		ClientID:     os.Getenv("GOOGLE_OAUTH_CLIENT_ID"),
-		ClientSecret: os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
+		RedirectURL:  fmt.Sprintf("%s/login/callback", url),
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/userinfo.profile",

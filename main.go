@@ -20,7 +20,8 @@ var tpl = template.Must(template.ParseFiles(
 	"templates/index.html",
 	"templates/google-signin.html",
 	"templates/form.html",
-	"templates/qr-viewer.html"))
+	"templates/qr-viewer.html",
+))
 
 var qrServer serveQr.Server
 
@@ -33,8 +34,11 @@ func main() {
 	if !checkRequiredEnvVars([]string{
 		"GOOGLE_OAUTH_CLIENT_ID",
 		"GOOGLE_OAUTH_CLIENT_SECRET",
-		"GOOGLE_SPREADSHEET_ID",
 		"QR_VIEWER_PASSWORD",
+		"SESSION_KEY",
+		"GOOGLE_SREADSHEET_ACCOUNT_EMAIL",
+		"GOOGLE_SREADSHEET_ACCOUNT_KEY",
+		"GOOGLE_SPREADSHEET_ID",
 	}) {
 		return
 	}
@@ -63,7 +67,17 @@ func main() {
 	mux.HandleFunc("/qr-viewer", qrViewHandler)
 	mux.HandleFunc("/qr", qrWSHandler)
 	googleLoginAuth.SetupCallbacks(mux)
-	googleLoginAuth.InitOAuthConfig()
+	googleLoginAuth.SetupAuthConfig(
+		os.Getenv("SESSION_KEY"),
+		os.Getenv("URL"),
+		os.Getenv("GOOGLE_OAUTH_CLIENT_ID"),
+		os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
+	)
+	spreadsheetAPI.SetupAuthConfig(
+		os.Getenv("GOOGLE_SREADSHEET_ACCOUNT_EMAIL"),
+		os.Getenv("GOOGLE_SREADSHEET_ACCOUNT_KEY"),
+		os.Getenv("GOOGLE_SPREADSHEET_ID"),
+	)
 
 	qrServer = serveQr.New()
 	go qrServer.Broadcast.Serve()
@@ -145,6 +159,7 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		r.FormValue("reason"))
 	if err != nil {
 		http.Error(w, "Failed to record form data", http.StatusInternalServerError)
+		log.Printf("Error: unabled to submit data to spreadsheet: %v", err)
 		return
 	}
 
