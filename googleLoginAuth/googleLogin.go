@@ -50,6 +50,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the session from the request
 	session, err := store.Get(r, "session-name")
 	if err != nil {
+		log.Printf("Google Logout Error: %v", err)
 		http.Error(w, "Failed to get session", http.StatusInternalServerError)
 		return
 	}
@@ -60,7 +61,8 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Save the session to apply changes
 	if err := session.Save(r, w); err != nil {
-		http.Error(w, "Failed to save session", http.StatusInternalServerError)
+		log.Printf("Google Logout Error: %v", err)
+		http.Error(w, "Failed to save session logout.", http.StatusInternalServerError)
 		return
 	}
 
@@ -68,19 +70,17 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SetupCallbacks(mux *http.ServeMux) {
-	// log.Printf("client id: %s", googleOauthConfig.ClientID)
-	// log.Printf("client secret: %s", googleOauthConfig.ClientID)
-
 	mux.HandleFunc("/login", oauthGoogleLogin)
 	mux.HandleFunc("/login/callback", oauthGoogleCallback)
 	mux.HandleFunc("/logout", logoutHandler)
 }
 
 func oauthGoogleLogin(w http.ResponseWriter, r *http.Request) {
-
-	// Create oauthState cookie
-
-	oauthState := generateStateOauthCookie(w, r)
+	oauthState, err := generateStateOauthCookie(w, r)
+	if err != nil {
+		log.Println("Google Login Error: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 	/*
 		AuthCodeURL receive state that is a token to protect the user from CSRF attacks. You must always provide a non-empty string and
 		validate that it matches the the state query parameter on your redirect callback.
@@ -95,7 +95,7 @@ func oauthGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	// oauthState, _ := r.Cookie("oauthstate")
 
 	if r.FormValue("state") != session.Values["oauthstate"] {
-		log.Println("invalid oauth google state")
+		log.Println("Error: invalid oauth google state")
 		// log.Println(err.Error())
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
@@ -115,17 +115,23 @@ func oauthGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
-func generateStateOauthCookie(w http.ResponseWriter, r *http.Request) string {
-	session, _ := store.Get(r, "session-name")
+func generateStateOauthCookie(w http.ResponseWriter, r *http.Request) (string, error) {
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		return "", fmt.Errorf("unable get session: %s", err.Error())
+	}
 
 	b := make([]byte, 16)
 	rand.Read(b)
 	state := base64.URLEncoding.EncodeToString(b)
 
 	session.Values["oauthstate"] = state
-	session.Save(r, w)
+	err = session.Save(r, w)
+	if err != nil {
+		return "", fmt.Errorf("unable save oauth state to session: %s", err.Error())
+	}
 
-	return state
+	return state, nil
 }
 
 func getUserDataFromGoogle(code string) ([]byte, error) {
@@ -145,16 +151,6 @@ func getUserDataFromGoogle(code string) ([]byte, error) {
 		return nil, fmt.Errorf("failed read response: %s", err.Error())
 	}
 	return contents, nil
-}
-
-func generateSessionKey() []byte {
-	// Generate a random key with 32 bytes
-	key := make([]byte, 32)
-	_, err := rand.Read(key)
-	if err != nil {
-		log.Fatal("Error generating session key:", err)
-	}
-	return key
 }
 
 func GetUserDataFromSession(r *http.Request) (User, error) {
@@ -187,8 +183,10 @@ func IsUserAuthenticated(r *http.Request) bool {
 	}
 
 	// Check if userinfo is stored in the session
-	userinfo, _ := session.Values["userinfo"].([]byte)
-	// log.Printf("%s", userinfo)
+	userinfo, ok := session.Values["userinfo"].([]byte)
+	if !ok {
+		return false
+	}
 
 	var user User
 	err = json.Unmarshal(userinfo, &user)

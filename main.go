@@ -83,6 +83,17 @@ func main() {
 	qrServer = serveQr.New(os.Getenv("QR_VIEWER_PASSWORD"))
 	go qrServer.Broadcast.Serve()
 
+	// HACK: unset sensitive env vars once application is setup (for security)
+	os.Setenv("QR_VIEWER_PASSWORD", "")
+	os.Setenv("SESSION_KEY", "")
+
+	os.Setenv("GOOGLE_OAUTH_CLIENT_ID", "")
+	os.Setenv("GOOGLE_OAUTH_CLIENT_SECRET", "")
+
+	os.Setenv("GOOGLE_SREADSHEET_ACCOUNT_EMAIL", "")
+	os.Setenv("GOOGLE_SREADSHEET_ACCOUNT_KEY", "")
+	os.Setenv("GOOGLE_SPREADSHEET_ID", "")
+
 	middlewareMux := middleware.NewProxyHandler(mux)
 	if err = http.ListenAndServe(":"+port, middlewareMux); err != http.ErrServerClosed {
 		log.Printf("%v", err)

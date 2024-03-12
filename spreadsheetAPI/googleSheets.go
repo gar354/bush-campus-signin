@@ -3,11 +3,11 @@ package spreadsheetAPI
 import (
 	"context"
 	"fmt"
-	"time"
 	"strings"
+	"time"
 
-	"golang.org/x/oauth2/jwt"
 	"golang.org/x/oauth2/google"
+	"golang.org/x/oauth2/jwt"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
@@ -18,7 +18,7 @@ var jwtConfig *jwt.Config
 var spreadsheetID string
 
 func SetupAuthConfig(email string, key string, id string) {
-	key = strings.Replace(key,"\\n", "\n", -1) // fix escaping in env var
+	key = strings.Replace(key, "\\n", "\n", -1) // fix escaping in env var
 	jwtConfig = &jwt.Config{
 		Email:      email,
 		PrivateKey: []byte(key),
