@@ -17,21 +17,23 @@ import (
 )
 
 type Server struct {
-	url       string
-	uuid      string
-	imgData   []byte
-	Broadcast broadcast.Broadcaster
-	Upgrader  websocket.Upgrader
-	mu        sync.Mutex
+	url        string
+	uuid       string
+	imgData    []byte
+	Broadcast  broadcast.Broadcaster
+	Upgrader   websocket.Upgrader
+	mu         sync.Mutex
+	qrPassword string
 }
 
-func New() Server {
+func New(qrPassword string) Server {
 	s := Server{
 		Broadcast: broadcast.New(),
 		Upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 		},
+		qrPassword: qrPassword,
 	}
 	err := s.RefreshQr()
 	if err != nil {
@@ -76,6 +78,10 @@ func (s *Server) GetUUID() string {
 
 func (s *Server) GetIMGData() []byte {
 	return s.imgData
+}
+
+func (s *Server) CheckPassword(password string) bool {
+	return s.qrPassword == password
 }
 
 type nopCloser struct {

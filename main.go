@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"strings"
 	"net/http"
 	"os"
 
@@ -16,14 +17,15 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var tpl = template.Must(template.ParseFiles(
-	"templates/index.html",
-	"templates/google-signin.html",
-	"templates/form.html",
-	"templates/qr-viewer.html",
-))
-
-var qrServer serveQr.Server
+var (
+	tpl = template.Must(template.ParseFiles(
+		"templates/index.html",
+		"templates/google-signin.html",
+		"templates/form.html",
+		"templates/qr-viewer.html",
+	))
+	qrServer serveQr.Server
+)
 
 func main() {
 	err := godotenv.Load()
@@ -79,7 +81,7 @@ func main() {
 		os.Getenv("GOOGLE_SPREADSHEET_ID"),
 	)
 
-	qrServer = serveQr.New()
+	qrServer = serveQr.New(os.Getenv("QR_VIEWER_PASSWORD"))
 	go qrServer.Broadcast.Serve()
 
 	middlewareMux := middleware.NewProxyHandler(mux)
@@ -175,7 +177,7 @@ func validateFormSubmit(r *http.Request) bool {
 
 func qrWSHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.URL.Query().Get("password")
-	if password != os.Getenv("QR_VIEWER_PASSWORD") {
+	if !qrServer.CheckPassword(password) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		log.Println("Unauthorized http request for QR image rejected.")
 		return
@@ -223,12 +225,12 @@ func qrWSHandler(w http.ResponseWriter, r *http.Request) {
 
 func qrViewHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.URL.Query().Get("password")
-	if password != os.Getenv("QR_VIEWER_PASSWORD") {
+	if !qrServer.CheckPassword(password) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		log.Println("Unauthorized http request for QR image viewer rejected.")
 		return
 	}
-	tpl.ExecuteTemplate(w, "qr-viewer.html", os.Getenv("QR_VIEWER_PASSWORD"))
+	tpl.ExecuteTemplate(w, "qr-viewer.html", password)
 }
 
 func checkRequiredEnvVars(requiredEnvVars []string) bool {
