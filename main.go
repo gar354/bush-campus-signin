@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"strings"
 	"net/http"
 	"os"
 
