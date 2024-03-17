@@ -23,7 +23,7 @@ var (
 		"templates/form.html",
 		"templates/qr-viewer.html",
 	))
-	qrServer serveQr.Server
+	qrServer *serveQr.Server
 )
 
 func main() {
@@ -81,6 +81,10 @@ func main() {
 	)
 
 	qrServer = serveQr.New(os.Getenv("QR_VIEWER_PASSWORD"))
+	err = qrServer.RefreshQr()
+	if err != nil {
+		log.Fatalf("Failed to generate QR code: %v", err)
+	}
 	go qrServer.Broadcast.Serve()
 
 	// HACK: unset sensitive env vars once application is setup (for security)

@@ -26,7 +26,7 @@ type Server struct {
 	qrPassword string
 }
 
-func New(qrPassword string) Server {
+func New(qrPassword string) *Server {
 	s := Server{
 		Broadcast: broadcast.New(),
 		Upgrader: websocket.Upgrader{
@@ -35,11 +35,7 @@ func New(qrPassword string) Server {
 		},
 		qrPassword: qrPassword,
 	}
-	err := s.RefreshQr()
-	if err != nil {
-		log.Println("Error Creating QrServer: %v", err)
-	}
-	return s
+	return &s
 }
 
 func (s *Server) RefreshQr() error {
