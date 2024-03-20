@@ -69,7 +69,7 @@ func (b *Broadcaster) Serve() {
 
 		case data, ok := <-b.channel:
 			if !ok {
-				log.Println("broadcast channel closed")
+				log.Println("Braodcast: broadcast channel closed")
 				return
 			}
 			for _, c := range clients {

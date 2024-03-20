@@ -35,7 +35,6 @@ func main() {
 	if !checkRequiredEnvVars([]string{
 		"GOOGLE_OAUTH_CLIENT_ID",
 		"GOOGLE_OAUTH_CLIENT_SECRET",
-		"QR_VIEWER_PASSWORD",
 		"SESSION_KEY",
 		"GOOGLE_SREADSHEET_ACCOUNT_EMAIL",
 		"GOOGLE_SREADSHEET_ACCOUNT_KEY",
@@ -65,8 +64,22 @@ func main() {
 	mux.HandleFunc("/form", formHandler)
 	mux.HandleFunc("/submit", formSubmitHandler)
 
-	mux.HandleFunc("/qr-viewer", qrViewHandler)
-	mux.HandleFunc("/qr", qrWSHandler)
+	if os.Getenv("QR_VIEWER_PASSWORD") != "" {
+		log.Println("Info: using QR authentication")
+		// TODO: remove qr viewer from program (handle webpage seperately)
+		mux.HandleFunc("/qr-viewer", qrViewHandler)
+		mux.HandleFunc("/qr", qrWSHandler)
+
+		qrServer = serveQr.New(os.Getenv("QR_VIEWER_PASSWORD"))
+		err = qrServer.RefreshQr()
+		if err != nil {
+			log.Fatalf("Failed to generate QR code: %v", err)
+		}
+		go qrServer.Broadcast.Serve()
+	} else {
+		log.Println("Info: QR authentication disabled")
+	}
+
 	googleLoginAuth.SetupCallbacks(mux)
 	googleLoginAuth.SetupAuthConfig(
 		os.Getenv("SESSION_KEY"),
@@ -79,13 +92,6 @@ func main() {
 		os.Getenv("GOOGLE_SREADSHEET_ACCOUNT_KEY"),
 		os.Getenv("GOOGLE_SPREADSHEET_ID"),
 	)
-
-	qrServer = serveQr.New(os.Getenv("QR_VIEWER_PASSWORD"))
-	err = qrServer.RefreshQr()
-	if err != nil {
-		log.Fatalf("Failed to generate QR code: %v", err)
-	}
-	go qrServer.Broadcast.Serve()
 
 	// HACK: unset sensitive env vars once application is setup (for security)
 	os.Setenv("QR_VIEWER_PASSWORD", "")
@@ -135,9 +141,8 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func formHandler(w http.ResponseWriter, r *http.Request) {
 	urlUUID := r.URL.Query().Get("UUID")
-	if urlUUID != qrServer.GetUUID() || !googleLoginAuth.IsUserAuthenticated(r) {
+	if checkUUID(qrServer, urlUUID) || !googleLoginAuth.IsUserAuthenticated(r) {
 		// Handle the case when the "UUID" query parameter is empty
-		// http.Error(w, "UUID parameter is correct", http.StatusBadRequest)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
@@ -168,7 +173,12 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get user data", http.StatusInternalServerError)
 		return
 	}
-	go qrServer.RefreshQr()
+	// refresh the QR asynchronously
+	if qrServer != nil {
+		go qrServer.RefreshQr()
+	}
+
+	// submit the form data to google sheets
 	err = spreadsheetAPI.SubmitSpreadSheetData(
 		user.Email, r.FormValue("signin-type"),
 		r.FormValue("free-period"),
@@ -183,7 +193,7 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func validateFormSubmit(r *http.Request) bool {
-	return r.FormValue("uuid") == qrServer.GetUUID() &&
+	return checkUUID(qrServer, r.FormValue("uuid")) &&
 		(r.FormValue("signin-type") == "Signing In" || r.FormValue("signin-type") == "Signing Out") &&
 		(r.FormValue("free-period") == "Yes" || r.FormValue("free-period") == "No") &&
 		(len(r.FormValue("reason")) <= 25)
@@ -256,4 +266,12 @@ func checkRequiredEnvVars(requiredEnvVars []string) bool {
 		}
 	}
 	return true
+}
+
+// HACK: this is is just a simple hack to keep oneliner functions that check the uuid (accounts for nil value)
+func checkUUID(server *serveQr.Server, uuid string) bool {
+	if server == nil {
+		return true
+	}
+	return server.CheckUUID(uuid)
 }

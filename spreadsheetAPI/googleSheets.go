@@ -18,7 +18,7 @@ var jwtConfig *jwt.Config
 var spreadsheetID string
 
 func SetupAuthConfig(email string, key string, id string) {
-	key = strings.Replace(key, "\\n", "\n", -1) // fix escaping in env var
+	key = strings.Replace(key, "\\n", "\n", -1) // HACK: fix escaping in env var
 	jwtConfig = &jwt.Config{
 		Email:      email,
 		PrivateKey: []byte(key),
@@ -92,7 +92,7 @@ func SubmitSpreadSheetData(email string, signinType string, freePeriod string, r
 
 	// Prepare the data to be appended
 	values := [][]interface{}{
-		{email, time.Now().Format("2006-01-02 15:04:05"), signinType, freePeriod, reason},
+		{email, time.Now().Format("3:04:05 PM"), signinType, freePeriod, reason},
 	}
 
 	// Define the range to append data

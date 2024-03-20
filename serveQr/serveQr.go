@@ -68,8 +68,8 @@ func (s *Server) RefreshQr() error {
 	return nil
 }
 
-func (s *Server) GetUUID() string {
-	return s.uuid
+func (s *Server) CheckUUID(uuid string) bool {
+	return s.uuid == uuid
 }
 
 func (s *Server) GetIMGData() []byte {
