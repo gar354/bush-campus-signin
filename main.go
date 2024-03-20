@@ -22,6 +22,7 @@ var (
 		"templates/google-signin.html",
 		"templates/form.html",
 		"templates/qr-viewer.html",
+		"templates/post-submit.html",
 	))
 	qrServer *serveQr.Server
 )
@@ -60,9 +61,12 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
-	mux.HandleFunc("/", indexHandler)
-	mux.HandleFunc("/form", formHandler)
+	mux.HandleFunc("/account", indexHandler)
+	mux.HandleFunc("/", formHandler)
 	mux.HandleFunc("/submit", formSubmitHandler)
+	mux.HandleFunc("/submit/post", func(w http.ResponseWriter, h *http.Request) {
+		tpl.ExecuteTemplate(w, "post-submit.html", nil)
+	})
 
 	if os.Getenv("QR_VIEWER_PASSWORD") != "" {
 		log.Println("Info: using QR authentication")
@@ -141,9 +145,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func formHandler(w http.ResponseWriter, r *http.Request) {
 	urlUUID := r.URL.Query().Get("UUID")
-	if checkUUID(qrServer, urlUUID) || !googleLoginAuth.IsUserAuthenticated(r) {
+	if !checkUUID(qrServer, urlUUID) || !googleLoginAuth.IsUserAuthenticated(r) {
 		// Handle the case when the "UUID" query parameter is empty
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/account", http.StatusTemporaryRedirect)
 		return
 	}
 	user, err := googleLoginAuth.GetUserDataFromSession(r)
@@ -189,7 +193,7 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	http.Redirect(w, r, "/submit/post", http.StatusTemporaryRedirect)
 }
 
 func validateFormSubmit(r *http.Request) bool {

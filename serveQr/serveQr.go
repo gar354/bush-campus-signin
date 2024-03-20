@@ -43,7 +43,7 @@ func (s *Server) RefreshQr() error {
 	defer s.mu.Unlock()
 
 	s.uuid = uuid.NewString()
-	s.url = fmt.Sprintf("%s/form?UUID=%s", os.Getenv("URL"), s.uuid)
+	s.url = fmt.Sprintf("%s?UUID=%s", os.Getenv("URL"), s.uuid)
 	log.Println(s.url)
 
 	qrc, err := qrcode.NewWith(s.url,
