@@ -1,6 +1,9 @@
 package serveQr
 
 import (
+	"html/template"
+	"net/http"
+
 	"github.com/gar354/bush-campus-signin/broadcast"
 
 	"bytes"
@@ -85,3 +88,66 @@ type nopCloser struct {
 }
 
 func (nopCloser) Close() error { return nil }
+
+func QrWSHandler(qrServer *Server) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		password := r.URL.Query().Get("password")
+		if !qrServer.CheckPassword(password) {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			log.Println("Unauthorized http request for QR image rejected.")
+			return
+		}
+
+		conn, err := qrServer.Upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Println("Failed to upgrade to WebSocket:", err)
+			return
+		}
+		defer conn.Close()
+
+		// Send QR code image data on first connect
+		if err := conn.WriteMessage(websocket.BinaryMessage, qrServer.GetIMGData()); err != nil {
+			log.Println("Failed to send QR code data:", err)
+			return
+		}
+
+		client := qrServer.Broadcast.Register()
+
+		go func() {
+			for {
+				select {
+				case newData, ok := <-client:
+					if !ok {
+						log.Println("client channel closed!")
+						return
+					}
+					log.Println("successfully broadcasted new data")
+					if err := conn.WriteMessage(websocket.BinaryMessage, newData); err != nil {
+						log.Println("Failed to send QR code data:", err)
+					}
+				}
+			}
+		}()
+		for {
+			_, _, err := conn.ReadMessage()
+			if err != nil {
+				qrServer.Broadcast.DeRegister(client)
+				log.Println("WebSocket connection closed by client:", err)
+				break
+			}
+		}
+	}
+}
+
+func QrViewHandler(qrServer *Server, tpl *template.Template) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		password := r.URL.Query().Get("password")
+		if !qrServer.CheckPassword(password) {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			log.Println("Unauthorized http request for QR image viewer rejected.")
+			return
+		}
+
+		tpl.ExecuteTemplate(w, "qr-viewer.html", password)
+	}
+}

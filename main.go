@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 )
 
@@ -69,12 +68,12 @@ func main() {
 	})
 
 	if os.Getenv("QR_VIEWER_PASSWORD") != "" {
+		qrServer = serveQr.New(os.Getenv("QR_VIEWER_PASSWORD"))
 		log.Println("Info: using QR authentication")
 		// TODO: remove qr viewer from program (handle webpage seperately)
-		mux.HandleFunc("/qr-viewer", qrViewHandler)
-		mux.HandleFunc("/qr", qrWSHandler)
+		mux.HandleFunc("/qr-viewer", serveQr.QrViewHandler(qrServer, tpl))
+		mux.HandleFunc("/qr", serveQr.QrWSHandler(qrServer))
 
-		qrServer = serveQr.New(os.Getenv("QR_VIEWER_PASSWORD"))
 		err = qrServer.RefreshQr()
 		if err != nil {
 			log.Fatalf("Failed to generate QR code: %v", err)
@@ -196,69 +195,12 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/submit/post", http.StatusTemporaryRedirect)
 }
 
+// sorta hacky long function, might make this nicer later
 func validateFormSubmit(r *http.Request) bool {
 	return checkUUID(qrServer, r.FormValue("uuid")) &&
 		(r.FormValue("signin-type") == "Signing In" || r.FormValue("signin-type") == "Signing Out") &&
 		(r.FormValue("free-period") == "Yes" || r.FormValue("free-period") == "No") &&
 		(len(r.FormValue("reason")) <= 25)
-}
-
-func qrWSHandler(w http.ResponseWriter, r *http.Request) {
-	password := r.URL.Query().Get("password")
-	if !qrServer.CheckPassword(password) {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		log.Println("Unauthorized http request for QR image rejected.")
-		return
-	}
-
-	conn, err := qrServer.Upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println("Failed to upgrade to WebSocket:", err)
-		return
-	}
-	defer conn.Close()
-
-	// Send QR code image data on first connect
-	if err := conn.WriteMessage(websocket.BinaryMessage, qrServer.GetIMGData()); err != nil {
-		log.Println("Failed to send QR code data:", err)
-		return
-	}
-
-	client := qrServer.Broadcast.Register()
-
-	go func() {
-		for {
-			select {
-			case newData, ok := <-client:
-				if !ok {
-					log.Println("client channel closed!")
-					return
-				}
-				log.Println("successfully broadcasted new data")
-				if err := conn.WriteMessage(websocket.BinaryMessage, newData); err != nil {
-					log.Println("Failed to send QR code data:", err)
-				}
-			}
-		}
-	}()
-	for {
-		_, _, err := conn.ReadMessage()
-		if err != nil {
-			qrServer.Broadcast.DeRegister(client)
-			log.Println("WebSocket connection closed by client:", err)
-			break
-		}
-	}
-}
-
-func qrViewHandler(w http.ResponseWriter, r *http.Request) {
-	password := r.URL.Query().Get("password")
-	if !qrServer.CheckPassword(password) {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		log.Println("Unauthorized http request for QR image viewer rejected.")
-		return
-	}
-	tpl.ExecuteTemplate(w, "qr-viewer.html", password)
 }
 
 func checkRequiredEnvVars(requiredEnvVars []string) bool {
