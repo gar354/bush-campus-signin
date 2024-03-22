@@ -167,7 +167,7 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to submit form: User is not authenticated", http.StatusInternalServerError)
 		return
 	}
-	if !validateFormSubmit(r) {
+	if !validateFormSubmit(r, qrServer) {
 		http.Error(w, "Failed to submit form: invalid form data", http.StatusInternalServerError)
 		return
 	}
@@ -196,8 +196,8 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // sorta hacky long function, might make this nicer later
-func validateFormSubmit(r *http.Request) bool {
-	return checkUUID(qrServer, r.FormValue("uuid")) &&
+func validateFormSubmit(r *http.Request, server *serveQr.Server) bool {
+	return checkUUID(server, r.FormValue("uuid")) &&
 		(r.FormValue("signin-type") == "Signing In" || r.FormValue("signin-type") == "Signing Out") &&
 		(r.FormValue("free-period") == "Yes" || r.FormValue("free-period") == "No") &&
 		(len(r.FormValue("reason")) <= 25)

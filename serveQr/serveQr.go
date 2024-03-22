@@ -1,15 +1,14 @@
 package serveQr
 
 import (
-	"html/template"
-	"net/http"
-
 	"github.com/gar354/bush-campus-signin/broadcast"
 
 	"bytes"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"sync"
 
