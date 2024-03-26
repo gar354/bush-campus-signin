@@ -71,6 +71,9 @@ func (s *Server) RefreshQr() error {
 }
 
 func (s *Server) CheckUUID(uuid string) bool {
+	if s == nil {
+		return true
+	}
 	return s.uuid == uuid
 }
 

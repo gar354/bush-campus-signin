@@ -144,7 +144,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func formHandler(w http.ResponseWriter, r *http.Request) {
 	urlUUID := r.URL.Query().Get("UUID")
-	if !checkUUID(qrServer, urlUUID) || !googleLoginAuth.IsUserAuthenticated(r) {
+	if !qrServer.CheckUUID(urlUUID) || !googleLoginAuth.IsUserAuthenticated(r) {
 		// Handle the case when the "UUID" query parameter is empty
 		http.Redirect(w, r, "/account", http.StatusTemporaryRedirect)
 		return
@@ -197,7 +197,7 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 
 // sorta hacky long function, might make this nicer later
 func validateFormSubmit(r *http.Request, server *serveQr.Server) bool {
-	return checkUUID(server, r.FormValue("uuid")) &&
+	return server.CheckUUID(r.FormValue("uuid")) &&
 		(r.FormValue("signin-type") == "Signing In" || r.FormValue("signin-type") == "Signing Out") &&
 		(r.FormValue("free-period") == "Yes" || r.FormValue("free-period") == "No") &&
 		(len(r.FormValue("reason")) <= 25)
@@ -212,12 +212,4 @@ func checkRequiredEnvVars(requiredEnvVars []string) bool {
 		}
 	}
 	return true
-}
-
-// HACK: this is is just a simple hack to keep oneliner functions that check the uuid (accounts for nil value)
-func checkUUID(server *serveQr.Server, uuid string) bool {
-	if server == nil {
-		return true
-	}
-	return server.CheckUUID(uuid)
 }
