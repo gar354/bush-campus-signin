@@ -1,6 +1,6 @@
 services:
   bush-campus-signin:
-    image: bush-campus-signin:latest
+    image: ghcr.io/gar354/bush-campus-signin:main
     volumes:
       - $PWD/data:/app/data:Z
     environment:
