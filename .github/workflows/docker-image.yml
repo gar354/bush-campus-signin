@@ -13,9 +13,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ github.repository_owner }}/bush-campus-signin:latest
+          tags: ${{ github.actor }}/bush-campus-signin:latest
             
