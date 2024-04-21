@@ -46,6 +46,7 @@ h1 {
     margin-bottom: 10px; /* Adjust spacing between label and input */
 }
 
+.btn-dropdown,
 .input {
     border: 2px solid #ccc;
     border-radius: 5px;
@@ -53,9 +54,10 @@ h1 {
     font-size: 16px;
     background-color: transparent;
     color: #333;
-    appearance: none; /* Remove default arrow in Chrome/Safari */
+    /* appearance: none; */
 }
 
+.btn-dropdown,
 .input:focus {
     outline: none;
     border-color: #007bff;
@@ -64,6 +66,10 @@ h1 {
 .input option {
     background-color: #fff;
     color: #333;
+}
+
+.btn-dropdown {
+    text-align: center;
 }
 
 .btn-primary {

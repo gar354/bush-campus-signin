@@ -1,6 +1,8 @@
 package main
 
 import (
+	"slices"
+
 	"github.com/gar354/bush-campus-signin/googleLoginAuth"
 	"github.com/gar354/bush-campus-signin/middleware"
 	"github.com/gar354/bush-campus-signin/serveQr"
@@ -16,6 +18,25 @@ import (
 )
 
 var (
+	checkOutReasons = []string{
+		"Free Period",
+		"Family Trip",
+		"Sports Dissmissal",
+		"Illness",
+		"Medical Appt",
+		"Other Appt",
+		"Lunch",
+	}
+	checkInReasons = []string{
+		"Free Period",
+		"Traffic",
+		"Medical Appt",
+		"Other Appt",
+		"Bus",
+		"Overslept",
+		"Not Feeling Well In The Morning",
+		"Lunch",
+	}
 	tpl = template.Must(template.ParseFiles(
 		"templates/index.html",
 		"templates/google-signin.html",
@@ -155,8 +176,10 @@ func formHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := map[string]interface{}{
-		"UUID": urlUUID,
-		"User": user,
+		"UUID":            urlUUID,
+		"User":            user,
+		"CheckInReasons":  checkInReasons,
+		"CheckOutReasons": checkOutReasons,
 	}
 
 	tpl.ExecuteTemplate(w, "form.html", data)
@@ -184,7 +207,6 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	// submit the form data to google sheets
 	err = spreadsheetAPI.SubmitSpreadSheetData(
 		user.Email, r.FormValue("signin-type"),
-		r.FormValue("free-period"),
 		r.FormValue("reason"))
 	if err != nil {
 		http.Error(w, "Failed to record form data", http.StatusInternalServerError)
@@ -199,8 +221,7 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 func validateFormSubmit(r *http.Request, server *serveQr.Server) bool {
 	return server.CheckUUID(r.FormValue("uuid")) &&
 		(r.FormValue("signin-type") == "Signing In" || r.FormValue("signin-type") == "Signing Out") &&
-		(r.FormValue("free-period") == "Yes" || r.FormValue("free-period") == "No") &&
-		(len(r.FormValue("reason")) <= 25)
+		(slices.Contains(checkInReasons, r.FormValue("reason")) || slices.Contains(checkOutReasons, r.FormValue("reason")))
 }
 
 func checkRequiredEnvVars(requiredEnvVars []string) bool {

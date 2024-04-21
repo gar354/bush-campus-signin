@@ -19,35 +19,37 @@
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" class="input" value="{{ .User.Email }}" readonly>
             </div>
-            <label for="signin-type" class="input-group">Are you signing in or out of campus?</label>
+            <label id="signin-type" class="input-group">Are you signing in or out of campus?</label>
             <div>
                 <div class="radio">
-                    <input type="radio" id="sign-in" name="signin-type" value="Signing In" class="radio__input" required/>
+                        <input type="radio" id="sign-in" name="signin-type" value="Signing In" class="radio__input" onclick="populateReasons({{ .CheckInReasons }})"required/>
                     <label for="sign-in" class="radio__label">Signing In</label>
                 </div>
                 <div class="radio">
-                    <input type="radio" id="sign-out" name="signin-type" value="Signing Out" class="radio__input" />
+                        <input type="radio" id="sign-out" name="signin-type" value="Signing Out" class="radio__input" onclick="populateReasons({{ .CheckOutReasons }})"/>
                     <label for="sign-out" class="radio__label">Signing Out</label>
                 </div>
             </div>
-            <label for="free-period" class="input-group">Free Period?</label>
-            <div>
-                <div class="radio">
-                    <input type="radio" id="free-period-yes" name="free-period" value="Yes" class="radio__input" required/>
-                    <label for="free-period-yes" class="radio__label">Yes</label>
-                </div>
-                <div class="radio">
-                    <input type="radio" id="free-period-no" name="free-period" value="No" class="radio__input" />
-                    <label for="free-period-no" class="radio__label">No</label>
-                </div>
-            </div>
-            <div class="input-group">
-                <label for="">Reason</label>
-                <input type="text" id="reason" name="reason" class="input" maxlength="25">
+            <div class="input-group" id="reason-group" style="display: none">
+                <label>Reason</label>
+                    <select id="reason" name="reason" class="btn-dropdown">
+                    </select>
             </div>
             <input type="hidden" id="uuid" name="uuid" value="{{ .UUID }}">
             <input type="submit" value="Submit" class="btn-primary ripple">
         </form>
     </div>
+    <script>
+        const reasonsGroup = document.getElementById("reason-group");
+        const reason = document.getElementById("reason");
+
+        function populateReasons(Reasons) {
+            reasonsGroup.style = "";
+            reason.innerHTML = "";
+            Reasons.forEach( option => {
+                reason.innerHTML += `<option>${option}</option>`;
+            })
+        }
+    </script>
 </body>
 </html>

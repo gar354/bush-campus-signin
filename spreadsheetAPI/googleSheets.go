@@ -28,7 +28,7 @@ func SetupAuthConfig(email string, key string, id string) {
 	spreadsheetID = id
 }
 
-func SubmitSpreadSheetData(email string, signinType string, freePeriod string, reason string) error {
+func SubmitSpreadSheetData(email string, signinType string, reason string) error {
 	// Create a context
 	ctx := context.Background()
 
@@ -73,7 +73,7 @@ func SubmitSpreadSheetData(email string, signinType string, freePeriod string, r
 	// add columns
 	if !sheetExists {
 		columns := [][]interface{}{
-			{"Email", "Time", "Sign Out/Sign In", "Free Period?", "Reason"},
+			{"Email", "Time", "Sign Out/Sign In", "Reason"},
 		}
 		// Define the range to append data
 		rangeToAppend := fmt.Sprintf("%s!A:E", currentDate)
@@ -92,7 +92,7 @@ func SubmitSpreadSheetData(email string, signinType string, freePeriod string, r
 
 	// Prepare the data to be appended
 	values := [][]interface{}{
-		{email, time.Now().Format("3:04:05 PM"), signinType, freePeriod, reason},
+		{email, time.Now().Format("3:04:05 PM"), signinType, reason},
 	}
 
 	// Define the range to append data
