@@ -18,6 +18,7 @@ import (
 )
 
 var (
+	// TODO: possibly move form handling, etc to another file?
 	checkOutReasons = []string{
 		"Free Period",
 		"Family Trip",
@@ -217,7 +218,7 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/submit/post", http.StatusTemporaryRedirect)
 }
 
-// sorta hacky long function, might make this nicer later
+// TODO: if this function becomes larger, make it not stupid
 func validateFormSubmit(r *http.Request, server *serveQr.Server) bool {
 	return server.CheckUUID(r.FormValue("uuid")) &&
 		(r.FormValue("signin-type") == "Signing In" || r.FormValue("signin-type") == "Signing Out") &&
