@@ -18,11 +18,11 @@ To run this application you must properly configure the google console and put i
 1. copy the sample [docker-compose.yml](docker-compose.yml) and modify it to your needs
 1. create an empty directory `data`, this will be mounted onto the container and hold encrypted session data
 1. create an [oauth 2.0 webapp in google cloud console](https://support.google.com/cloud/answer/6158849?hl=en)
-  1. in the `.env` file you copied, set the `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` appropriately from the JSON values downloaded
+    - in the `.env` file you copied, set the `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` appropriately from the JSON values downloaded
 1. create a [service account through the google cloud console](https://cloud.google.com/iam/docs/service-accounts-create)
-  1. be sure to save the private key into the `.env` file under `GOOGLE_SREADSHEET_ACCOUNT_KEY` and the email under `GOOGLE_SREADSHEET_ACCOUNT_EMAIL`
+    - be sure to save the private key into the `.env` file under `GOOGLE_SREADSHEET_ACCOUNT_KEY` and the email under `GOOGLE_SREADSHEET_ACCOUNT_EMAIL`
 1. Next, create a spreadsheet for storing the attendence data, make sure to share it with the service account you created earlier, inputting the email assigned to it.
-  1. copy the spreadsheet ID from the url and put it inside of the `.env` file in the field `GOOGLE_SPREADSHEET_ID`
+    - copy the spreadsheet ID from the url and put it inside of the `.env` file in the field `GOOGLE_SPREADSHEET_ID`
 1. using the sample [docker-compose.yml](docker-compose.yml) you are now (hopefully) able to run:
   ```
   docker-compose -d up
