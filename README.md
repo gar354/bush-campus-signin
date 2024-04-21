@@ -2,7 +2,6 @@
 a simple webapp written in go to allow students at bush to sign in and out of campus.
 
 ## basic rundown
-test
 1. A student visits the URL through the QR code (if the app is launched with a QR password)
 2. The student then signs in with their google account if they have not already to verify their identity
 3. The student then submits the form, saying whether or not they are signing in/out and specifying the reason
