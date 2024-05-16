@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/gar354/bush-campus-signin/compare/v1.0.0...v1.0.1) (2024-05-16)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/yeqown/go-qrcode/v2 to v2.2.4 ([ebd28b3](https://github.com/gar354/bush-campus-signin/commit/ebd28b35543f7c794cac8461b0ef623192f86759))
+* **deps:** update module google.golang.org/api to v0.181.0 ([e292a9b](https://github.com/gar354/bush-campus-signin/commit/e292a9bc0e7632271f42a910d0183b94156eaee8))
+
 ## 1.0.0 (2024-05-16)
 
 
