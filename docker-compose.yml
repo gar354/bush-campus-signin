@@ -2,17 +2,17 @@ services:
   bush-campus-signin:
     image: ghcr.io/gar354/bush-campus-signin:main
     volumes:
-      - $PWD/data:/app/data:Z
+      - $PWD/data:/app/data
     environment:
       - URL=https://localhost:8443
     env_file: .env
 
   caddy:
-    image: caddy:latest
+    image: ghcr.io/gar354/caddy:latest
     ports:
-      - "8080:80"
-      - "8443:443"
+      - "80:80"
+      - "443:443"
     volumes:
-      - $PWD/Caddyfile:/etc/caddy/Caddyfile:Z
+      - $PWD/Caddyfile:/etc/caddy/Caddyfile
     depends_on:
       - bush-campus-signin
