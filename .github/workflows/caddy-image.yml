@@ -43,5 +43,9 @@ jobs:
         with:
           context: ./caddy
           push: true
-          tags: ${{ env.IMAGE_NAME }}:latest
-          labels: ${{ steps.meta.outputs.labels }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tag_with_ref: true
+          tags: latest
+
