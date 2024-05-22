@@ -4,6 +4,7 @@ name: Create and publish a Container image
 on:
   schedule:
     - cron: '30 5 * * 3'
+  workflow_dispatch:
 
 
 env:
