@@ -43,5 +43,5 @@ jobs:
         with:
           context: ./caddy
           push: true
-          tags: latest
+          tags: ${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}
