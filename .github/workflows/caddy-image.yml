@@ -2,15 +2,14 @@ name: Create and publish a Container image
 
 # Configures this workflow to run every time a change is pushed to the branch called `release`.
 on:
-  push:
-    tags:
-      - 'v*'
+  schedule:
+    - cron: '30 5 * * 3'
   workflow_dispatch:
 
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.actor }}/caddy
 
 jobs:
   build-and-push-image:
@@ -31,18 +30,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5.5.1
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}}
+      # - name: Extract metadata (tags, labels) for Docker
+      #   id: meta
+      #   uses: docker/metadata-action@v5.5.1
+      #   with:
+      #     images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      #     tags: |
+      #       type=semver,pattern={{version}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6.4.1
         with:
-          context: .
+          context: ./caddy
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
