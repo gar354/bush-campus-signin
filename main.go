@@ -27,6 +27,7 @@ var (
 		"Medical Appt",
 		"Other Appt",
 		"Lunch",
+		"Other",
 	}
 	checkInReasons = []string{
 		"Free Period",
@@ -37,6 +38,7 @@ var (
 		"Overslept",
 		"Not Feeling Well In The Morning",
 		"Lunch",
+		"Other",
 	}
 	tpl = template.Must(template.ParseFiles(
 		"templates/index.html",
