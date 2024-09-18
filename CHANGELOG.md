@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.0](https://github.com/gar354/bush-campus-signin/compare/v1.0.1...v1.1.0) (2024-09-18)
+
+
+### Features
+
+* add "other" option ([9fbde77](https://github.com/gar354/bush-campus-signin/commit/9fbde773d3a91e4124febaf46bba9bc5fd8b7bb1))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/gorilla/sessions to v1.4.0 ([ed71bca](https://github.com/gar354/bush-campus-signin/commit/ed71bca85a261f6280217a1b07cde33f7d346c12))
+* **deps:** update module github.com/gorilla/websocket to v1.5.3 ([d911737](https://github.com/gar354/bush-campus-signin/commit/d911737eedad655c224596e6f44e2f02aa8d6f97))
+* **deps:** update module github.com/yeqown/go-qrcode/writer/standard to v1.2.4 ([a0f7e4b](https://github.com/gar354/bush-campus-signin/commit/a0f7e4b778860eff773bbcfb4a48718c653fdfcf))
+* **deps:** update module google.golang.org/api to v0.197.0 ([6ff3aa5](https://github.com/gar354/bush-campus-signin/commit/6ff3aa588068d3850831c3b346f4d72fc925f512))
+
 ## [1.0.1](https://github.com/gar354/bush-campus-signin/compare/v1.0.0...v1.0.1) (2024-05-16)
 
 
