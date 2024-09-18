@@ -11,7 +11,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/yeqown/go-qrcode/v2 v2.2.4
 	github.com/yeqown/go-qrcode/writer/standard v1.2.4
-	golang.org/x/oauth2 v0.20.0
+	golang.org/x/oauth2 v0.23.0
 	google.golang.org/api v0.181.0
 )
 
