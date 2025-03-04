@@ -2,7 +2,7 @@ module github.com/gar354/bush-campus-signin
 
 go 1.23
 
-toolchain go1.23.1
+toolchain go1.24.1
 
 require (
 	github.com/google/uuid v1.6.0
