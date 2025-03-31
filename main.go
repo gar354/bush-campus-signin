@@ -5,7 +5,6 @@ import (
 
 	"github.com/gar354/bush-campus-signin/googleLoginAuth"
 	"github.com/gar354/bush-campus-signin/middleware"
-	"github.com/gar354/bush-campus-signin/serveQr"
 	"github.com/gar354/bush-campus-signin/spreadsheetAPI"
 
 	"fmt"
@@ -44,10 +43,8 @@ var (
 		"templates/index.html",
 		"templates/google-signin.html",
 		"templates/form.html",
-		"templates/qr-viewer.html",
 		"templates/post-submit.html",
 	))
-	qrServer *serveQr.Server
 )
 
 func main() {
@@ -90,22 +87,6 @@ func main() {
 	mux.HandleFunc("/submit/post", func(w http.ResponseWriter, h *http.Request) {
 		tpl.ExecuteTemplate(w, "post-submit.html", nil)
 	})
-
-	if os.Getenv("QR_VIEWER_PASSWORD") != "" {
-		qrServer = serveQr.New(os.Getenv("QR_VIEWER_PASSWORD"))
-		log.Println("Info: using QR authentication")
-		// TODO: remove qr viewer from program (handle webpage seperately)
-		mux.HandleFunc("/qr-viewer", serveQr.QrViewHandler(qrServer, tpl))
-		mux.HandleFunc("/qr", serveQr.QrWSHandler(qrServer))
-
-		err = qrServer.RefreshQr()
-		if err != nil {
-			log.Fatalf("Failed to generate QR code: %v", err)
-		}
-		go qrServer.Broadcast.Serve()
-	} else {
-		log.Println("Info: QR authentication disabled")
-	}
 
 	googleLoginAuth.SetupCallbacks(mux)
 	googleLoginAuth.SetupAuthConfig(
@@ -167,8 +148,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func formHandler(w http.ResponseWriter, r *http.Request) {
-	urlUUID := r.URL.Query().Get("UUID")
-	if !qrServer.CheckUUID(urlUUID) || !googleLoginAuth.IsUserAuthenticated(r) {
+	if !googleLoginAuth.IsUserAuthenticated(r) {
 		// Handle the case when the "UUID" query parameter is empty
 		http.Redirect(w, r, "/account", http.StatusTemporaryRedirect)
 		return
@@ -178,8 +158,7 @@ func formHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get user data", http.StatusInternalServerError)
 		return
 	}
-	data := map[string]interface{}{
-		"UUID":            urlUUID,
+	data := map[string]any{
 		"User":            user,
 		"CheckInReasons":  checkInReasons,
 		"CheckOutReasons": checkOutReasons,
@@ -193,7 +172,7 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to submit form: User is not authenticated", http.StatusInternalServerError)
 		return
 	}
-	if !validateFormSubmit(r, qrServer) {
+	if !validateFormSubmit(r) {
 		http.Error(w, "Failed to submit form: invalid form data", http.StatusInternalServerError)
 		return
 	}
@@ -202,11 +181,6 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get user data", http.StatusInternalServerError)
 		return
 	}
-	// refresh the QR asynchronously
-	if qrServer != nil {
-		go qrServer.RefreshQr()
-	}
-
 	// submit the form data to google sheets
 	err = spreadsheetAPI.SubmitSpreadSheetData(
 		user.Email, r.FormValue("signin-type"),
@@ -221,9 +195,8 @@ func formSubmitHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // TODO: if this function becomes larger, make it not stupid
-func validateFormSubmit(r *http.Request, server *serveQr.Server) bool {
-	return server.CheckUUID(r.FormValue("uuid")) &&
-		(r.FormValue("signin-type") == "Signing In" || r.FormValue("signin-type") == "Signing Out") &&
+func validateFormSubmit(r *http.Request) bool {
+	return (r.FormValue("signin-type") == "Signing In" || r.FormValue("signin-type") == "Signing Out") &&
 		(slices.Contains(checkInReasons, r.FormValue("reason")) || slices.Contains(checkOutReasons, r.FormValue("reason")))
 }
 
