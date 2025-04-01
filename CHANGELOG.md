@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/gar354/bush-campus-signin/compare/v1.1.1...v1.1.2) (2025-04-01)
+
+
+### Bug Fixes
+
+* action ([e3ac623](https://github.com/gar354/bush-campus-signin/commit/e3ac623077c4f4f394f33d06dcfc5b50d39d4a20))
+
 ## [1.1.1](https://github.com/gar354/bush-campus-signin/compare/v1.1.0...v1.1.1) (2025-04-01)
 
 
