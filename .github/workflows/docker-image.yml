@@ -2,8 +2,8 @@ name: Create and publish a Container image
 
 on:
   push:
-    tags:
-      - 'v*'
+    # tags:
+    #   - 'v*'
   workflow_dispatch:
 
 env:
@@ -28,28 +28,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version tag from git tag
-        id: version_tag
-        run: |
-          TAG_NAME=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [[ -n "$TAG_NAME" ]]; then
-            echo "version_tag=$TAG_NAME" >> $GITHUB_ENV
-          fi
-
-      - name: Generate branch name and commit hash tag
-        id: branch_commit_tag
-        run: |
-          BRANCH_NAME=${GITHUB_REF#refs/heads/}
-          BRANCH_NAME=${BRANCH_NAME//\//-} # Replace '/' with '-'
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          echo "branch_commit_tag=${BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_ENV
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5.7.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6.15.0
         with:
           context: .
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.version_tag }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.branch_commit_tag }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
