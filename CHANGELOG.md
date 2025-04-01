@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.1](https://github.com/gar354/bush-campus-signin/compare/v1.1.0...v1.1.1) (2025-04-01)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([196dd0a](https://github.com/gar354/bush-campus-signin/commit/196dd0abdd359e3c5305c0a04de2ba77d8207da1))
+* **deps:** update all non-major dependencies ([3b13377](https://github.com/gar354/bush-campus-signin/commit/3b13377c5d523b40997deb703675daa0a06fa9ce))
+* workflows, remove caddy ([931fbd6](https://github.com/gar354/bush-campus-signin/commit/931fbd69fea1984520954436e89902e7e3aaf542))
+
 ## [1.1.0](https://github.com/gar354/bush-campus-signin/compare/v1.0.1...v1.1.0) (2024-09-18)
 
 
