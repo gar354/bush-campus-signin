@@ -2,12 +2,12 @@ module github.com/gar354/bush-campus-signin
 
 go 1.23.0
 
-toolchain go1.24.1
+toolchain go1.24.2
 
 require (
 	github.com/gorilla/sessions v1.4.0
 	github.com/joho/godotenv v1.5.1
-	golang.org/x/oauth2 v0.28.0
+	golang.org/x/oauth2 v0.29.0
 	google.golang.org/api v0.228.0
 )
 
