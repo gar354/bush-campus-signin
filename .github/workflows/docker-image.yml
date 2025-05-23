@@ -9,7 +9,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  
 
 jobs:
   build-and-push-image:
@@ -22,12 +21,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Format repo slug
-        uses: actions/github-script@v7
-        id: repo_slug
+      - name: Lowercase Registry
+        id: registry_case
+        uses: ASzc/change-string-case-action@v6
         with:
-          result-encoding: string
-          script: return `ghcr.io/${github.repository.toLowerCase()}`
+          string: ${{ env.IMAGE_NAME }}
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3.4.0
@@ -40,7 +38,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5.7.0
         with:
-          images: ${{ env.REGISTRY }}/${{ steps.repo_slug.outputs.result }}
+          images: ${{ env.REGISTRY }}/${{ steps.registry_case.outputs.lowercase }}
           tags: |
             type=semver,pattern={{version}}
             type=sha
