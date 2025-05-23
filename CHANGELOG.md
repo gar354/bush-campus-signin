@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.3](https://github.com/gar354/bush-campus-signin/compare/v1.1.2...v1.1.3) (2025-05-23)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([1fbdb3b](https://github.com/gar354/bush-campus-signin/commit/1fbdb3b39d636f9009c994e5931ac86bb9cdd0ce))
+* **deps:** update all non-major dependencies ([fb6dc9a](https://github.com/gar354/bush-campus-signin/commit/fb6dc9a995d0af79b972470a2f57f718a33c67df))
+
 ## [1.1.2](https://github.com/gar354/bush-campus-signin/compare/v1.1.1...v1.1.2) (2025-04-01)
 
 
