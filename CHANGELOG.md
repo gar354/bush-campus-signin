@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.5](https://github.com/gar354/bush-campus-signin/compare/v1.1.4...v1.1.5) (2025-07-07)
+
+
+### Bug Fixes
+
+* **deps:** update module google.golang.org/api to v0.240.0 ([f99d97c](https://github.com/gar354/bush-campus-signin/commit/f99d97c55cbb3184e5d61f0bf7ac67fdb5c2766f))
+* **deps:** update module google.golang.org/api to v0.240.0 ([c397e1f](https://github.com/gar354/bush-campus-signin/commit/c397e1f73464b982688d1ec3f958589241f322b8))
+
 ## [1.1.4](https://github.com/gar354/bush-campus-signin/compare/v1.1.3...v1.1.4) (2025-07-01)
 
 
